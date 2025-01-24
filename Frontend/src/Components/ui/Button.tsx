@@ -6,7 +6,7 @@ export interface ButtonProps {
     text: string;
     startIcon?: any;
     endIcon?: ReactElement;
-    onClick: () => void;
+    onClick?: () => void;
 }
 
 const variantStyles = {
@@ -14,7 +14,7 @@ const variantStyles = {
     "secondary": "bg-gray-300 text-black"
 }
 
-const defaultStyles = "rounded-md flex";
+const defaultStyles = "rounded-md flex items-center";
 
 const sizeStyles = {
     "sm": "text-sm px-2 py-1",
@@ -23,9 +23,9 @@ const sizeStyles = {
 }
 
 export const Button = (props: ButtonProps) => {
-    return <button className={`${variantStyles[props.variant]} ${defaultStyles} ${sizeStyles[props.size]}`}>
-        {(props.startIcon) ? <div className="mr-1 my-auto">{props.startIcon}</div> : null }
+    return <button onClick={props.onClick} className={`${variantStyles[props.variant]} ${defaultStyles} ${sizeStyles[props.size]} cursor-pointer`}>
+        {(props.startIcon) ? <div className="pr-2">{props.startIcon}</div> : null }
         {props.text}
-        {(props.endIcon) ? <div className="ml-1 my-auto">{props.endIcon}</div> : null }
+        {(props.endIcon) ? <div className="pl-2">{props.endIcon}</div> : null }
     </button>
 }
