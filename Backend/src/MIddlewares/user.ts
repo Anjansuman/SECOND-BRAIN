@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWT_PASSWORD } from "../config";
 
 export const userMiddleware = (req: Request, res: Response, next: NextFunction) => {
@@ -13,9 +13,14 @@ export const userMiddleware = (req: Request, res: Response, next: NextFunction) 
     const decoded = jwt.verify(header as string, JWT_PASSWORD);
 
     if(decoded) {
-        // @ts-ignore
-        // i have added ts-ignore but solve this problem
-        req.userId = decoded.id;
+        // checking if the jwt is string or not
+        if(typeof decoded === "string") {
+            res.status(403).json({
+                msg: "Wrong token!"
+            })
+            return;
+        }
+        req.userId = (decoded as JwtPayload).id;
         next();
     } else {
         res.status(403).json({

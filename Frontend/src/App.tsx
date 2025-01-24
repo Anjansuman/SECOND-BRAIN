@@ -2,7 +2,7 @@
 import './App.css'
 import { Button } from "./Components/ui/Button";
 import { PlusIcon } from './icons/PlusIcon';
-import { ShareIcon } from './icons/shareIcon';
+import { ShareIcon } from './icons/ShareIcon';
 
 function App() {
 

@@ -1,7 +1,17 @@
+
+declare global {
+    namespace Express {
+        export interface Request {
+            userId?: string;
+        }
+    }
+}
+
 import express from "express";
 import jwt from "jsonwebtoken";
-import { UserModel, ContentModel, TagModel } from "./db/schema";
+import { UserModel, ContentModel, TagModel, LinkModel } from "./db/schema";
 import { userMiddleware } from "./MIddlewares/user";
+import randomstring from "randomstring";
 
 import { JWT_PASSWORD } from "./config";
 
@@ -14,6 +24,18 @@ app.post("/api/v1/signup", async (req, res) => {
         const username = req.body.username;
         const password = req.body.password;
     
+        const exist = await UserModel.findOne({
+            username,
+            password
+        });
+
+        if(exist) {
+            res.status(403).json({
+                msg: "User already exists"
+            });
+            return;
+        }
+
         // hash the password
         await UserModel.create({
             username,
@@ -77,7 +99,6 @@ app.post("/api/v1/content", userMiddleware, async (req, res) => {
 })
 
 app.get("/api/v1/content", userMiddleware, async (req, res) => {
-    //@ts-ignore
     const userId = req.userId;
     const content = await ContentModel.find({
         userId: userId
@@ -89,13 +110,11 @@ app.get("/api/v1/content", userMiddleware, async (req, res) => {
     
 })
 
-app.delete("/api/v1/content",userMiddleware, async (req, res) => {
-    // @ts-ignore
+app.delete("/api/v1/content", userMiddleware, async (req, res) => {
     const contentId = req.body.contentId;
 
     const content = await ContentModel.deleteOne({
         _id: contentId,
-        // @ts-ignore
         userId: req.userId
     });
 
@@ -104,6 +123,94 @@ app.delete("/api/v1/content",userMiddleware, async (req, res) => {
         content: content,
         contentId: contentId
     })
+})
+
+app.post("/api/v1/brain/share", userMiddleware, async (req, res) => {
+    const share = req.body.share;
+    const hash = randomstring.generate(20);
+
+    try {
+        if(share) {
+
+            const exists = await LinkModel.findOne({
+                userId: req.userId
+            });
+    
+            if(exists) {
+                res.status(200).json({
+                    hash: exists.hash
+                });
+                return;
+            }
+    
+            await LinkModel.create({
+                hash: hash,
+                userId: req.userId
+            });
+    
+        } else {
+            await LinkModel.deleteOne({
+                userId: req.userId
+            });
+    
+            res.status(200).json({
+                msg: "Link doesn't exist anymore!",
+                hash: hash
+            })
+        }
+    
+        res.status(200).json({
+            msg: "updated shared link",
+            hash: hash
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            error: error
+        });
+    }
+
+})
+
+app.get("/api/v1/brain/:shareLink", async (req, res) => {
+    const hash = req.params.shareLink;
+
+    try {
+        const link = await LinkModel.findOne({
+            hash
+        });
+    
+        if(!link) {
+            res.status(411).json({
+                msg: "Brain doesn't exist"
+            });
+            return;
+        }
+    
+        const content = await ContentModel.find({
+            userId: link.userId
+        })
+    
+        const user = await UserModel.findOne({
+            _id: link.userId
+        })
+    
+        if(!user) {
+            res.status(411).json({
+                msg: "User with this I'd doesn't exist anymore!"
+            });
+            return;
+        }
+    
+        res.status(200).json({
+            username: user.username,
+            content: content
+        })
+    } catch (error) {
+        res.status(500).json({
+            error: error
+        })
+    }
 })
 
 app.listen(3000, () => {

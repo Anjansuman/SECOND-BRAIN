@@ -16,6 +16,7 @@ const express_1 = __importDefault(require("express"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const schema_1 = require("./db/schema");
 const user_1 = require("./MIddlewares/user");
+const randomstring_1 = __importDefault(require("randomstring"));
 const config_1 = require("./config");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
@@ -23,6 +24,16 @@ app.post("/api/v1/signup", (req, res) => __awaiter(void 0, void 0, void 0, funct
     try {
         const username = req.body.username;
         const password = req.body.password;
+        const exist = yield schema_1.UserModel.findOne({
+            username,
+            password
+        });
+        if (exist) {
+            res.status(403).json({
+                msg: "User already exists"
+            });
+            return;
+        }
         // hash the password
         yield schema_1.UserModel.create({
             username,
@@ -78,7 +89,6 @@ app.post("/api/v1/content", user_1.userMiddleware, (req, res) => __awaiter(void 
     });
 }));
 app.get("/api/v1/content", user_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    //@ts-ignore
     const userId = req.userId;
     const content = yield schema_1.ContentModel.find({
         userId: userId
@@ -88,11 +98,9 @@ app.get("/api/v1/content", user_1.userMiddleware, (req, res) => __awaiter(void 0
     });
 }));
 app.delete("/api/v1/content", user_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // @ts-ignore
     const contentId = req.body.contentId;
     const content = yield schema_1.ContentModel.deleteOne({
         _id: contentId,
-        // @ts-ignore
         userId: req.userId
     });
     res.status(200).json({
@@ -100,6 +108,81 @@ app.delete("/api/v1/content", user_1.userMiddleware, (req, res) => __awaiter(voi
         content: content,
         contentId: contentId
     });
+}));
+app.post("/api/v1/brain/share", user_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const share = req.body.share;
+    const hash = randomstring_1.default.generate(20);
+    try {
+        if (share) {
+            const exists = yield schema_1.LinkModel.findOne({
+                userId: req.userId
+            });
+            if (exists) {
+                res.status(200).json({
+                    hash: exists.hash
+                });
+                return;
+            }
+            yield schema_1.LinkModel.create({
+                hash: hash,
+                userId: req.userId
+            });
+        }
+        else {
+            yield schema_1.LinkModel.deleteOne({
+                userId: req.userId
+            });
+            res.status(200).json({
+                msg: "Link doesn't exist anymore!",
+                hash: hash
+            });
+        }
+        res.status(200).json({
+            msg: "updated shared link",
+            hash: hash
+        });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            error: error
+        });
+    }
+}));
+app.get("/api/v1/brain/:shareLink", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const hash = req.params.shareLink;
+    try {
+        const link = yield schema_1.LinkModel.findOne({
+            hash
+        });
+        if (!link) {
+            res.status(411).json({
+                msg: "Brain doesn't exist"
+            });
+            return;
+        }
+        const content = yield schema_1.ContentModel.find({
+            userId: link.userId
+        });
+        const user = yield schema_1.UserModel.findOne({
+            _id: link.userId
+        });
+        if (!user) {
+            res.status(411).json({
+                msg: "User with this I'd doesn't exist anymore!"
+            });
+            return;
+        }
+        res.status(200).json({
+            username: user.username,
+            content: content
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            error: error
+        });
+    }
 }));
 app.listen(3000, () => {
     console.log("your app started...");

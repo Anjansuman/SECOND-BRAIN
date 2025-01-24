@@ -23,5 +23,9 @@ const sizeStyles = {
 }
 
 export const Button = (props: ButtonProps) => {
-    return <button className={`${variantStyles[props.variant]} ${defaultStyles} ${sizeStyles[props.size]}`}>{props.startIcon} {props.text} {props.endIcon}</button>
+    return <button className={`${variantStyles[props.variant]} ${defaultStyles} ${sizeStyles[props.size]}`}>
+        {(props.startIcon) ? <div className="mr-1 my-auto">{props.startIcon}</div> : null }
+        {props.text}
+        {(props.endIcon) ? <div className="ml-1 my-auto">{props.endIcon}</div> : null }
+    </button>
 }

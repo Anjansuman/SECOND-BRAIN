@@ -15,8 +15,13 @@ const userMiddleware = (req, res, next) => {
     }
     const decoded = jsonwebtoken_1.default.verify(header, config_1.JWT_PASSWORD);
     if (decoded) {
-        // @ts-ignore
-        // i have added ts-ignore but solve this problem
+        // checking if the jwt is string or not
+        if (typeof decoded === "string") {
+            res.status(403).json({
+                msg: "Wrong token!"
+            });
+            return;
+        }
         req.userId = decoded.id;
         next();
     }
