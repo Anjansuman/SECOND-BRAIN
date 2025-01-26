@@ -1,7 +1,14 @@
 import { CrossIcon } from "../icons/CrossIcon";
 import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
 
-export const CreateContentModel = ({ open, onClose }) => {
+
+interface CreateContentModelProps {
+    open: boolean,
+    onClose: () => void
+}
+
+export const CreateContentModel = ({ open, onClose }: CreateContentModelProps) => {
     return <div>
         {open && <div className="h-screen w-screen bg-slate-500 fixed left-0 top-0 opacity-60 backdrop-blur-lg flex justify-center ">
             <div className="flex flex-col justify-center">
@@ -22,8 +29,3 @@ export const CreateContentModel = ({ open, onClose }) => {
     </div>
 }
 
-function Input({onChange, placeholder}: {onChange: () => void}) {
-    return <div>
-        <input placeholder={placeholder} type="text" className="px-4 py-2 border rounded m-1.5" onChange={onChange} />
-    </div>
-}

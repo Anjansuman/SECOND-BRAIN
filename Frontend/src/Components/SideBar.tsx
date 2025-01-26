@@ -4,7 +4,7 @@ import { BrainIcon } from "../icons/BrainIcon";
 
 export const SideBar = () => {
     return <div className="h-screen w-72 bg-white border-r-2 border-gray-300 fixed left-0 top-0 p-4 ">
-        <div className="flex items-center text-2xl py-2 cursor-pointer ">
+        <div className="flex items-center text-2xl py-2 cursor-pointer mb-8 ">
             <div className="pr-2">
                 <BrainIcon/>
             </div>
