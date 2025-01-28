@@ -83,7 +83,6 @@ app.post("/api/v1/content", user_1.userMiddleware, (req, res) => __awaiter(void 
         type,
         title,
         tags: [],
-        //@ts-ignore
         userId: req.userId
     });
     res.status(200).json({

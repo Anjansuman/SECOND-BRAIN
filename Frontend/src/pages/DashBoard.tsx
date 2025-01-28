@@ -6,8 +6,15 @@ import { ShareIcon } from '../icons/ShareIcon';
 import { Card } from "../Components/ui/Card";
 import { CreateContentModel } from '../Components/CreateContentModel';
 import { SideBar } from '../Components/SideBar';
+import { useRecoilValue } from "recoil";
+import { ContentAtom } from "../Atoms/ContentAtom";
 
 export function DashBoard() {
+
+
+  const content: { type: "youtube" | "twitter"; title: string; link: string }[] = useRecoilValue(ContentAtom);
+
+
 
   const [modelOpen, setModelOpen] = useState(false);
 
@@ -23,8 +30,7 @@ export function DashBoard() {
         </div>
 
         <div className='flex gap-4'>
-        <Card type='youtube' title='S8UL' link="https://youtu.be/wEb92MPklis?si=vi6Mgeo9Fhbx93TE" />
-        <Card type='youtube' title='S8UL' link="https://youtu.be/wEb92MPklis?si=vi6Mgeo9Fhbx93TE" />
+          {content.map(({ type, title, link }) => <Card title={title} type={type} link={link} />)}
         </div>
       </div>
     </div>
